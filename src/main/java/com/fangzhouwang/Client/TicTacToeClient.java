@@ -93,9 +93,14 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
         return true;
     }
 
-    public boolean checkServerStatue() throws RemoteException {
-        return server.isAlive();
+    public boolean checkServerStatue() {
+        try {
+            return server.isAlive();
+        } catch (RemoteException e) {
+            return false;
+        }
     }
+
 
 
     public String updateGameStatue(String username) throws RemoteException {

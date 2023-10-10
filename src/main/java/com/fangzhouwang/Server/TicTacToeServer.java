@@ -49,7 +49,10 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
                             }
                         } else {
                             game.setPauseFlag(false);
-                            quitSystem(player.getName());
+//                            FSystem(player.getName());
+                            forceQuitSystem(player.getName());
+                            //TODO:增加中断逻辑
+
                             clientStatusMap.remove(player.getName());  // 可选：从map中移除该客户端
                         }
                     }
@@ -63,7 +66,8 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
                     } else {
                         try {
                             game.setPauseFlag(false);
-                            quitSystem(player.getName());
+//                            quitSystem(player.getName());
+                            forceQuitSystem(player.getName());
                         } catch (RemoteException ex) {
                             throw new RuntimeException(ex);
                         }
@@ -161,6 +165,32 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
 
             if(game.getStatus().equals("In Progress")) {
                 game.makeOpponentPlayerWin(username);
+                game.checkStatus();
+            }
+            playerToGameMap.remove(username);
+        }
+        synchronized (waitingPlayers) {
+            waitingPlayers.removeIf(player -> player.getName().equals(username));
+        }
+        synchronized (clientStatusMap){
+            clientStatusMap.remove(username);
+        }
+        return "Success";
+    }
+    public String forceQuitSystem(String username) throws RemoteException {
+        players.remove(username);
+//        synchronized (playerRanks) {
+//            playerRanks.removeIf(player -> player.getName().equals(username));
+//        }
+        // Logic to handle player quitting
+        Game game = playerToGameMap.get(username);
+        if (game != null) {
+            // 销毁与该用户相关的游戏实例
+            // 这里你可以添加其他的清理逻quit辑，例如通知另一个玩家
+
+            if(game.getStatus().equals("In Progress")) {
+//                game.makeOpponentPlayerWin(username);
+                game.makeDraw();
                 game.checkStatus();
             }
             playerToGameMap.remove(username);

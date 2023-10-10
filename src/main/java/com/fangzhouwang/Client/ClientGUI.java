@@ -208,6 +208,16 @@ public class ClientGUI{
             public void actionPerformed(ActionEvent e) {
                 try {
                     try {
+                        try {
+                            if (!client.checkServerStatue()) {
+//                                timer.stop();
+                                JOptionPane.showMessageDialog(frame, "Server has disconnected.", "Error", JOptionPane.ERROR_MESSAGE);
+                                Thread.sleep(5000);
+                                System.exit(0);
+                            }
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                         boolean isPaused = client.isPaused(username);
                         if (isPaused) {
                             if (!pauseDialog.isVisible()) {
@@ -255,15 +265,6 @@ public class ClientGUI{
                     }
                 } catch (RemoteException remoteException) {
                     remoteException.printStackTrace();
-                }
-                try {
-                    if (!client.checkServerStatue()) {
-                        timer.stop();  // 停止计时器
-                        JOptionPane.showMessageDialog(frame, "Server has disconnected.", "Error", JOptionPane.ERROR_MESSAGE);
-                        System.exit(0);  // 或者其他适当的退出逻辑
-                    }
-                } catch (RemoteException ex) {
-                    throw new RuntimeException(ex);
                 }
             }
         });

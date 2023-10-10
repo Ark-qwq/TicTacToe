@@ -247,6 +247,9 @@ public class Game {
 
         status = "Player " + opponent.getName() + " wins due to opponent's forfeit!";
     }
+    public void makeDraw(){
+        status = "It's a draw!";
+    }
 
     public void stopForWait(){
         status = "Pause";
