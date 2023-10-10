@@ -23,12 +23,12 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
 
 
 
-    public TicTacToeClient(String username) throws RemoteException {
+    public TicTacToeClient(String username, String serverIp, int serverPort) throws RemoteException {
         super();
         try {
-            server = (TicTacToeInterface) Naming.lookup("rmi://localhost/TicTacToeServer");
+            server = (TicTacToeInterface) Naming.lookup("rmi://" + serverIp + ":" + serverPort + "/TicTacToeServer");
             this.username = username;
-            Naming.rebind("rmi://localhost/Client" + username, this);
+//            Naming.rebind("rmi://localhost/Client" + username, this);
 
             // Initialize GUI components here
             moveTimer = new Timer(1000, e -> updateTimer());
@@ -39,6 +39,7 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
             e.printStackTrace();
         }
     }
+
 
     private void updateTimer() {
         int timeLeft = Integer.parseInt(timerLabel.getText());
@@ -149,18 +150,20 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
 
 
     public static void main(String[] args) throws RemoteException {
-        if (args.length < 1) {
-            System.out.println("Only one param allow");
+        if (args.length < 3) {
+            System.out.println("Please provide a username, server IP, and server port as command-line arguments.");
             return;
         }
-        TicTacToeClient client = new TicTacToeClient(args[0]);
-        ClientGUI gui = new ClientGUI(args[0],client);
-        client.setGui(gui);
-//        gui.setClient(client);
+        String username = args[0];
+        String serverIp = args[1];
+        int serverPort = Integer.parseInt(args[2]);
 
-//        client.registerToServer();
+        TicTacToeClient client = new TicTacToeClient(username, serverIp, serverPort);
+        ClientGUI gui = new ClientGUI(username, client);
+        client.setGui(gui);
         client.connectToServer();
     }
+
 
 
     public boolean isPaused(String username) throws RemoteException {

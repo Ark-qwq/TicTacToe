@@ -301,16 +301,23 @@ public class ClientGUI{
         // 按行分割内容
         String[] lines = chatArea.getText().split("\n");
 
-        // 检查行数是否超过10
-        if (lines.length > 10) {
+        // 检查行数是否超过20（10个空行 + 10个消息）
+        if (lines.length > 20) {
             // 删除最早的消息
             String newText = String.join("\n", Arrays.copyOfRange(lines, 1, lines.length));
             chatArea.setText(newText+"\n");
         }
 
+        // 如果行数少于20，添加足够的换行以确保总共有20行
+        while (lines.length < 20) {
+            chatArea.insert("\n", 0);
+            lines = chatArea.getText().split("\n");
+        }
+
         // 将插入符号位置设置为chatArea的末尾，以确保最新消息始终可见
         chatArea.setCaretPosition(chatArea.getDocument().getLength());
     }
+
 
 
 

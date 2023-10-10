@@ -4,6 +4,7 @@ package com.fangzhouwang.Server;
  * @Author Fangzhou Wang
  * @Date 2023/10/5 22:57
  **/
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -349,17 +350,25 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
 
     public static void main(String[] args) {
         try {
-            TicTacToeServer server = new TicTacToeServer();
-            Registry registry = LocateRegistry.createRegistry(1099);
+            int port = Integer.parseInt(args[1]);
+            String serverIp = args[0];
 
-            // 将远程对象的stub绑定到注册表中
-            registry.bind("TicTacToeServer", server);
-//            java.rmi.Naming.rebind("TicTacToeServer", server);
-            System.out.println("TicTacToeServer is ready");
+            TicTacToeServer server = new TicTacToeServer();
+
+            // 创建注册表
+            LocateRegistry.createRegistry(port);
+
+            // 使用完整的RMI URL绑定服务
+            Naming.bind("rmi://" + serverIp + ":" + port + "/TicTacToeServer", server);
+
+            System.out.println("TicTacToeServer is ready at " + serverIp + ":" + port);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
+
 }
 
