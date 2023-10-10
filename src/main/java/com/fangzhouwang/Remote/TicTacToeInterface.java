@@ -19,6 +19,7 @@ public interface TicTacToeInterface extends Remote {
     boolean isAlive() throws RemoteException;
     boolean isLogIn(String username) throws RemoteException;
     boolean isPaused(String username) throws RemoteException;
+    boolean isDuplicate(String username) throws RemoteException;
 }
 
 

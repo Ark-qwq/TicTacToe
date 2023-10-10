@@ -36,6 +36,8 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
             // Add timerLabel to the GUI
 
         } catch (Exception e) {
+            System.out.println("Server Not Found!");
+            System.exit(1);
             e.printStackTrace();
         }
     }
@@ -108,13 +110,19 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
         return  server.updateGameStatue(username);
     }
 
-    public void registerToServer() throws RemoteException {
+    public void registerToServer() {
         try {
-            server.registerPlayer(username, this);
+            if (server.isDuplicate(username)) {
+                // 弹出提示框
+                gui.showDuplicate();
+            } else {
+                server.registerPlayer(username, this);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     public void sendChatMessage(String username,String message) throws RemoteException {
         server.sendMessage(username,message);
@@ -134,19 +142,24 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
     public String updateNextMove() throws RemoteException {
         return server.updateNextMove(username);
     }
-    public void connectToServer() throws RemoteException {
-        if(server.isLogIn(username)){
-            server.rejoinGame(username,this);
-            List<String> chatMessages = server.getChatMessages(username);
-            if (chatMessages != null) {
-                for (String message : chatMessages) {
-                    gui.appendChatArea(message);
+    public void connectToServer() {
+        try {
+            if (server.isLogIn(username)) {
+                server.rejoinGame(username, this);
+                List<String> chatMessages = server.getChatMessages(username);
+                if (chatMessages != null) {
+                    for (String message : chatMessages) {
+                        gui.appendChatArea(message);
+                    }
                 }
+            } else {
+                registerToServer();
             }
-        }else {
-            registerToServer();
+        } catch (RemoteException e) {
+            gui.showConnectionError();
         }
     }
+
 
 
     public static void main(String[] args) throws RemoteException {

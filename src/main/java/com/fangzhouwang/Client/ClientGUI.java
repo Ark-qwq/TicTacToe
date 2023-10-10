@@ -293,7 +293,20 @@ public class ClientGUI{
 //    public void appendChatArea(String message){
 //        chatArea.append(message+'\n');
 //    }
+    public void showDuplicate(){
+        JOptionPane pane = new JOptionPane("用户名重复", JOptionPane.ERROR_MESSAGE);
+        JDialog dialog = pane.createDialog("错误");
+        dialog.setModal(false);  // 设置为非模态
+        dialog.setVisible(true);
 
+        // 3秒后关闭提示框并退出程序
+        javax.swing.Timer timer1 = new Timer(3000, e -> {
+            dialog.dispose();
+            System.exit(0);
+        });
+        timer1.setRepeats(false);
+        timer1.start();
+    }
     public void appendChatArea(String message) {
         // 添加新消息
         chatArea.append(message + '\n');
@@ -316,6 +329,20 @@ public class ClientGUI{
 
         // 将插入符号位置设置为chatArea的末尾，以确保最新消息始终可见
         chatArea.setCaretPosition(chatArea.getDocument().getLength());
+    }
+    public void showConnectionError(){
+
+        JOptionPane pane = new JOptionPane("Server Connection Error", JOptionPane.ERROR_MESSAGE);
+        JDialog dialog = pane.createDialog("Error");
+        dialog.setModal(false);
+        dialog.setVisible(true);
+
+        Timer timer = new Timer(3000, event -> {
+            dialog.dispose();
+            System.exit(0);
+        });
+        timer.setRepeats(false);
+        timer.start();
     }
 
 

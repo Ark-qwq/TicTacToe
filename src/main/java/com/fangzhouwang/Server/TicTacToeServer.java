@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 import com.fangzhouwang.Remote.ClientInterface;
 import com.fangzhouwang.Remote.TicTacToeInterface;
 
+import javax.swing.*;
+import javax.swing.Timer;
+
 public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInterface {
     private volatile ConcurrentHashMap<String, Player> players = new ConcurrentHashMap<>();
 
@@ -324,7 +327,7 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
     @Override
     public boolean isLogIn(String username) throws RemoteException {
         Integer status = clientStatusMap.get(username);
-        if (status != null && status < 28) {
+        if (status != null && status < 28 && status > 0) {
             return true;
         }
         return false;
@@ -339,6 +342,17 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
         }else {
             return false;
         }
+    }
+
+    @Override
+    public boolean isDuplicate(String username) throws RemoteException {
+        if(clientStatusMap.containsKey(username)){
+            return true;
+        }
+        else {
+            return false;
+        }
+
     }
 
 
