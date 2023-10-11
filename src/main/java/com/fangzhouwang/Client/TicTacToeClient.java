@@ -46,15 +46,10 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
     private void updateTimer() {
         int timeLeft = Integer.parseInt(timerLabel.getText());
         if (timeLeft == 0) {
-            makeRandomMove();
             moveTimer.stop();
         } else {
             timerLabel.setText(String.valueOf(timeLeft - 1));
         }
-    }
-
-    private void makeRandomMove() {
-        // Logic to make a random move
     }
 
     public String makeMove(int row, int col) {
@@ -75,7 +70,6 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
 
     @Override
     public void updateBoard(char[][] board ) throws RemoteException {
-        // 更新GUI的逻辑
         gui.updateBoardButton(board);
     }
 
@@ -86,7 +80,6 @@ public class TicTacToeClient extends UnicastRemoteObject implements ClientInterf
 
     @Override
     public void updateGameResult(String message) throws RemoteException {
-        // 创建一个JOptionPane来显示信息
 //        JOptionPane.showMessageDialog(null, message, "游戏结果", JOptionPane.INFORMATION_MESSAGE);
         gui.appendChatArea(message);
     }

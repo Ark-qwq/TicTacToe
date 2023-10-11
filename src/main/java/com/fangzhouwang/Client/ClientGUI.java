@@ -44,14 +44,14 @@ public class ClientGUI{
                 try {
                     String response = client.quitSystem(username);
                     if ("Success".equals(response)) {
-                        System.exit(0);  // 退出程序
+                        System.exit(0);
                     } else {
-                        // 可以在这里处理其他的响应，例如显示一个错误消息
-                        JOptionPane.showMessageDialog(frame, "退出失败！", "错误", JOptionPane.ERROR_MESSAGE);
+
+                        JOptionPane.showMessageDialog(frame, "Fail！", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (RemoteException ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(frame, "连接失败", "错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Fail!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -128,7 +128,7 @@ public class ClientGUI{
                     } catch (RemoteException ex) {
                         throw new RuntimeException(ex);
                     }
-                    inputField.setText("");  // 清空输入框
+                    inputField.setText("");
                 }
             }
         });
@@ -149,9 +149,8 @@ public class ClientGUI{
                 try {
                     String response = client.quitSystem(username);
                     if ("Success".equals(response)) {
-                        System.exit(0);  // 退出程序
+                        System.exit(0);
                     } else {
-                        // 可以在这里处理其他的响应，例如显示一个错误消息
                         JOptionPane.showMessageDialog(frame, "Fall！", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (RemoteException ex) {
@@ -174,7 +173,6 @@ public class ClientGUI{
                 } catch (RemoteException ex) {
                     throw new RuntimeException(ex);
                 }
-                // 根据服务器的响应显示相应的消息
                 if ("Waiting...".equals(response)) {
                     JOptionPane.showMessageDialog(frame, "Waiting...", "Message", JOptionPane.INFORMATION_MESSAGE);
                 } else if ("You already in a game!".equals(response)) {
@@ -199,7 +197,7 @@ public class ClientGUI{
         pauseDialog.setSize(200, 100);
         pauseDialog.setLayout(new FlowLayout());
         pauseDialog.add(new JLabel("Game is paused..."));
-        pauseDialog.setLocationRelativeTo(frame);  // 使对话框居中显示
+        pauseDialog.setLocationRelativeTo(frame);
 
 
 // Timer to update the elapsed time and check game status
@@ -294,12 +292,12 @@ public class ClientGUI{
 //        chatArea.append(message+'\n');
 //    }
     public void showDuplicate(){
-        JOptionPane pane = new JOptionPane("用户名重复", JOptionPane.ERROR_MESSAGE);
-        JDialog dialog = pane.createDialog("错误");
-        dialog.setModal(false);  // 设置为非模态
+        JOptionPane pane = new JOptionPane("User Name Duplicate", JOptionPane.ERROR_MESSAGE);
+        JDialog dialog = pane.createDialog("Error");
+        dialog.setModal(false);
         dialog.setVisible(true);
 
-        // 3秒后关闭提示框并退出程序
+
         javax.swing.Timer timer1 = new Timer(3000, e -> {
             dialog.dispose();
             System.exit(0);
@@ -308,26 +306,23 @@ public class ClientGUI{
         timer1.start();
     }
     public void appendChatArea(String message) {
-        // 添加新消息
         chatArea.append(message + '\n');
 
-        // 按行分割内容
         String[] lines = chatArea.getText().split("\n");
 
-        // 检查行数是否超过20（10个空行 + 10个消息）
+
         if (lines.length > 20) {
-            // 删除最早的消息
             String newText = String.join("\n", Arrays.copyOfRange(lines, 1, lines.length));
             chatArea.setText(newText+"\n");
         }
 
-        // 如果行数少于20，添加足够的换行以确保总共有20行
+
         while (lines.length < 20) {
             chatArea.insert("\n", 0);
             lines = chatArea.getText().split("\n");
         }
 
-        // 将插入符号位置设置为chatArea的末尾，以确保最新消息始终可见
+
         chatArea.setCaretPosition(chatArea.getDocument().getLength());
     }
     public void showConnectionError(){

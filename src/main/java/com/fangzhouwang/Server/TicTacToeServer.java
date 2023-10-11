@@ -41,28 +41,38 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
                     Game game = playerToGameMap.get(player.getName());
                     if (alive) {
                         clientStatusMap.put(player.getName(), 0);
-                        // 如果玩家重新连接，恢复游戏状态
                         if (game != null) {
-                            game.setPauseFlag(false);  // 恢复游戏
+                            game.setPauseFlag(false);
                         }
                     } else {
                         clientStatusMap.compute(player.getName(), (key, val) -> (val == null ? 1 : val + 1));
+                        if (waitingPlayers.contains(player)) {
+                            quitSystem(player.getName());
+                            continue;  // Skip the rest of the loop for this player
+                        }
                         if (clientStatusMap.get(player.getName()) <= 30) {
                             if (game != null) {
-                                game.setPauseFlag(true);  // 暂停游戏
+                                game.setPauseFlag(true);
                             }
                         } else {
                             game.setPauseFlag(false);
 //                            FSystem(player.getName());
                             forceQuitSystem(player.getName());
-                            //TODO:增加中断逻辑
-
-                            clientStatusMap.remove(player.getName());  // 可选：从map中移除该客户端
+                            clientStatusMap.remove(player.getName());
                         }
                     }
                 } catch (RemoteException e) {
                     clientStatusMap.compute(player.getName(), (key, val) -> (val == null ? 1 : val + 1));
                     Game game = playerToGameMap.get(player.getName());
+                    clientStatusMap.compute(player.getName(), (key, val) -> (val == null ? 1 : val + 1));
+                    if (waitingPlayers.contains(player)) {
+                        try {
+                            quitSystem(player.getName());
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        continue;  // Skip the rest of the loop for this player
+                    }
                     if (clientStatusMap.get(player.getName()) <= 30) {
                         if (game != null) {
                             game.setPauseFlag(true);  // 暂停游戏
@@ -86,29 +96,39 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
     @Override
     public String registerPlayer(String username, ClientInterface clientRef) throws RemoteException {
         if (players.containsKey(username)) {
-        throw new RemoteException("用户名已存在！");
+        throw new RemoteException("User Name Exist！");
     }
 
         Player newPlayer = new Player(username, clientRef);
         players.put(username, newPlayer);
-
+//        clientStatusMap.put(username,0);
         // 将新玩家加入到匹配队列中
         waitingPlayers.add(newPlayer);
         synchronized (playerRanks) {
-//            playerRanks.add(newPlayer);
-            if (!playerRanks.contains(newPlayer)) {
-                playerRanks.add(newPlayer);
+            boolean found = false;
+            for (int i = 0; i < playerRanks.size(); i++) {
+                Player existingPlayer = playerRanks.get(i);
+                if (existingPlayer.getName().equals(newPlayer.getName())) {
+                    newPlayer.setScore(existingPlayer.getScore());
+                    playerRanks.remove(i);
+                    found = true;
+                    break;
+                }
+            }
+            playerRanks.add(newPlayer);
+            if (found) {
+                // Optionally, you can re-sort the playerRanks list if needed
             }
         }
 
 
-        // 尝试进行匹配
+
         matchPlayers();
         updatePlayerRanks();
         return username;
     }
     private void matchPlayers() throws RemoteException {
-        while (waitingPlayers.size() >= 2) {  // 当队列中至少有两个玩家时进行匹配
+        if (waitingPlayers.size() >= 2) {  // 当队列中至少有两个玩家时进行匹配
             Player player1 = waitingPlayers.poll();
             Player player2 = waitingPlayers.poll();
 
@@ -147,8 +167,7 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
 
     @Override
     public List<String> getChatMessages(String username) throws RemoteException {
-        // 这里只是一个示例，你可能需要根据实际的需求来获取聊天消息
-        Game game = playerToGameMap.get(username);  // 获取第一个游戏的聊天消息
+        Game game = playerToGameMap.get(username);
         if (game != null) {
             return game.getChatMessages();
         }
@@ -156,7 +175,7 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
     }
 
     @Override
-    public String quitSystem(String username) throws RemoteException {
+    public synchronized String quitSystem(String username) throws RemoteException {
         players.remove(username);
 //        synchronized (playerRanks) {
 //            playerRanks.removeIf(player -> player.getName().equals(username));
@@ -164,9 +183,6 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
         // Logic to handle player quitting
         Game game = playerToGameMap.get(username);
         if (game != null) {
-            // 销毁与该用户相关的游戏实例
-            // 这里你可以添加其他的清理逻quit辑，例如通知另一个玩家
-
             if(game.getStatus().equals("In Progress")) {
                 game.makeOpponentPlayerWin(username);
                 game.checkStatus();
@@ -174,7 +190,14 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
             playerToGameMap.remove(username);
         }
         synchronized (waitingPlayers) {
-            waitingPlayers.removeIf(player -> player.getName().equals(username));
+            Iterator<Player> iterator = waitingPlayers.iterator();
+            while (iterator.hasNext()) {
+                Player player = iterator.next();
+                if (player.getName().equals(username)) {
+                    iterator.remove();
+                    break;  // Assuming each username is unique, so we break after finding the first match
+                }
+            }
         }
         synchronized (clientStatusMap){
             clientStatusMap.remove(username);
@@ -189,8 +212,6 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
         // Logic to handle player quitting
         Game game = playerToGameMap.get(username);
         if (game != null) {
-            // 销毁与该用户相关的游戏实例
-            // 这里你可以添加其他的清理逻quit辑，例如通知另一个玩家
 
             if(game.getStatus().equals("In Progress")) {
 //                game.makeOpponentPlayerWin(username);
@@ -230,10 +251,10 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
             return "No User";
         }
 
-        // 将当前玩家添加到等待队列中
+
         waitingPlayers.add(player);
 
-        // 尝试匹配玩家
+
         matchPlayers();
 
         return "Wating...";
@@ -279,7 +300,6 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
         if (game != null) {
 //            String status = game.getStatus();
             return game.getStatus();
-            // 根据status进行后续操作，例如通知客户端等
         } else {
             return "You are not in a game!";
 //            throw new RemoteException("You are not in a game！");
@@ -290,18 +310,18 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
     public String updateNextMove(String username) throws RemoteException {
         Game game = playerToGameMap.get(username);
 
-        // 检查玩家是否在游戏中
+
         if (game == null) {
             return "Not In a Match";
         }
 
-        // 检查游戏状态
+
         String status = game.getStatus();
         if (!"In Progress".equals(status)) {
             return "Game is Over";
         }
 
-        // 返回当前应该是谁进行下一步
+
         Player currentPlayer = game.getCurrentPlayer();
         char currentSymbol = (currentPlayer == game.getPlayer1()) ? game.getPlayer1Symbol() : game.getPlayer2Symbol();
         return "Rank#"+getRank(currentPlayer.getName())+" "+currentPlayer.getName() + " (" + currentSymbol +
@@ -369,10 +389,9 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
 
             TicTacToeServer server = new TicTacToeServer();
 
-            // 创建注册表
             LocateRegistry.createRegistry(port);
 
-            // 使用完整的RMI URL绑定服务
+
             Naming.bind("rmi://" + serverIp + ":" + port + "/TicTacToeServer", server);
 
             System.out.println("TicTacToeServer is ready at " + serverIp + ":" + port);

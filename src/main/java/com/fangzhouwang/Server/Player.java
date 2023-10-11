@@ -10,12 +10,13 @@ import java.rmi.RemoteException;
 **/
 public class Player {
     private String username;
-    private int  score;
+    private int  score  = 0;
     private ClientInterface client;
 
     public Player(String username, ClientInterface client) throws RemoteException {
         this.username = username;
         this.client = client;
+        this.score = 0;
     }
 
     public ClientInterface getClient() {
@@ -44,6 +45,9 @@ public class Player {
     }
     public void setClient(ClientInterface client){
         this.client = client;
+    }
+    public void setScore(int score) {
+        this.score = score;
     }
 }
 
