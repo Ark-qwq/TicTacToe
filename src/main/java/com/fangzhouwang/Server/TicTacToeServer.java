@@ -347,7 +347,7 @@ public class TicTacToeServer extends UnicastRemoteObject implements TicTacToeInt
     @Override
     public boolean isLogIn(String username) throws RemoteException {
         Integer status = clientStatusMap.get(username);
-        if (status != null && status < 28 && status > 0) {
+        if (status != null && status < 29 && status > 0) {
             return true;
         }
         return false;
